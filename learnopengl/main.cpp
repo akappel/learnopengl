@@ -7,14 +7,14 @@ int InitGLFWwindow();
 int InitGLEW();
 
 // object creation
-void CreateVAO();
-void CreateVBO();
-void CreateEBO();
+void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size);
 void CreateShaders();
 void CreateVertexShader();
 void CreateFragmentShader();
 void CreateShaderProgram();
 void DeleteShaders();
+
+void DrawTriangle(GLuint* id);
 
 // some error handling
 void CheckForShaderErrors(GLuint shaderId);
@@ -25,24 +25,21 @@ void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mo
 
 GLFWwindow* window;
 
-GLfloat vertices[] = {
+GLfloat trigAVertices[] = {
 	 0.0f,  0.8f, 0.0f, 
 	-0.5f,  0.1f, 0.0f, 
-	 0.5f,  0.1f, 0.0f,
+	 0.5f,  0.1f, 0.0f
+};
+
+GLfloat trigBVertices[] = {
 	 0.0f, -0.8f, 0.0f,
-    -0.5f, -0.1f, 0.0f,
+	-0.5f, -0.1f, 0.0f,
 	 0.5f, -0.1f, 0.0f
 };
 
-GLuint indices[] = {
-	0, 1, 3, // TR -> BR -> TL
-	1, 2, 3  // BR -> BL -> TL
-};
-
 // ID storage for different OpenGL objects
-GLuint vaoId;
-GLuint vboId;
-GLuint eboId;
+GLuint trigAId;
+GLuint trigBId;
 GLuint vertexShaderId;
 GLuint fragmentShaderId;
 GLuint shaderProgramId;
@@ -62,12 +59,9 @@ int main() {
 	// Give a callback to close the window on ESC key press
 	glfwSetKeyCallback(window, CloseWindowCB);
 
-	// setup our vertex array object for the subsequent VBO setup
-	CreateVAO();
-
-	// setup our buffer objects
-	CreateVBO();
-	// CreateEBO();
+	// generate a triangle
+	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
+	CreateTriangle(&trigBId, trigBVertices, sizeof(trigBVertices));
 
 	// setup shaders
 	CreateShaders();
@@ -92,7 +86,8 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		DrawTriangle(&trigAId);
+		DrawTriangle(&trigBId);
 
 		// display results of rendering
 		glfwSwapBuffers(window);
@@ -102,25 +97,31 @@ int main() {
 	return 0;
 }
 
-void CreateVAO() {
-	glGenVertexArrays(1, &vaoId);
-	glBindVertexArray(vaoId);
-}
+void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size) {
+	glGenVertexArrays(1, id);
+	
+	// we first need to bind the VAO
+	glBindVertexArray(*id);
 
-void CreateVBO() {
+	// now generate, bind, and attribute our VBO
+	GLuint vboId;
 	glGenBuffers(1, &vboId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
-	// tell OpenGL how to interpret our vertex data / link up the vertex data with the shader's vertex attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+
+	// cleanup
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	
 }
 
-void CreateEBO() {
-	glGenBuffers(1, &eboId);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+void DrawTriangle(GLuint* id) {
+	glBindVertexArray(*id);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0);
 }
 
 void CreateShaders() {
