@@ -9,6 +9,7 @@ int InitGLEW();
 // object creation
 void CreateVAO();
 void CreateVBO();
+void CreateEBO();
 void CreateShaders();
 void CreateVertexShader();
 void CreateFragmentShader();
@@ -24,16 +25,22 @@ void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mo
 
 GLFWwindow* window;
 
-// our lovely triangle's vertices
 GLfloat vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f,
-	 0.0f,  0.5f, 0.0f
+	 0.5f,  0.5f, 0.0f, // top right
+	 0.5f, -0.5f, 0.0f, // bottom right
+	-0.5f, -0.5f, 0.0f, // bottom left
+	-0.5f,  0.5f, 0.0f  // top left
+};
+
+GLuint indices[] = {
+	0, 1, 3, // TR -> BR -> TL
+	1, 2, 3  // BR -> BL -> TL
 };
 
 // ID storage for different OpenGL objects
 GLuint vaoId;
 GLuint vboId;
+GLuint eboId;
 GLuint vertexShaderId;
 GLuint fragmentShaderId;
 GLuint shaderProgramId;
@@ -56,8 +63,9 @@ int main() {
 	// setup our vertex array object for the subsequent VBO setup
 	CreateVAO();
 
-	// setup our vertex buffer object
+	// setup our buffer objects
 	CreateVBO();
+	CreateEBO();
 
 	// setup shaders
 	CreateShaders();
@@ -71,6 +79,9 @@ int main() {
 	// delete the shaders, as they have now been linked into a program
 	DeleteShaders();
 
+	// setup wireframe mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	while (!glfwWindowShouldClose(window)) {
 		// check for events, such as a keypress
 		glfwPollEvents();
@@ -79,7 +90,7 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// display results of rendering
 		glfwSwapBuffers(window);
@@ -102,6 +113,12 @@ void CreateVBO() {
 	// tell OpenGL how to interpret our vertex data / link up the vertex data with the shader's vertex attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+}
+
+void CreateEBO() {
+	glGenBuffers(1, &eboId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
 void CreateShaders() {
