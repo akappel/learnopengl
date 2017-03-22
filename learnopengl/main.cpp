@@ -23,23 +23,15 @@ void CheckForProgramErrors(GLuint programId);
 // function callbacks
 void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+// simple struct for vao + vertices
+typedef struct triangle {
+	GLuint vaoId;
+	GLfloat vertices[9];
+} triangle_t;
+
 GLFWwindow* window;
 
-GLfloat trigAVertices[] = {
-	 0.0f,  0.8f, 0.0f, 
-	-0.5f,  0.1f, 0.0f, 
-	 0.5f,  0.1f, 0.0f
-};
-
-GLfloat trigBVertices[] = {
-	 0.0f, -0.8f, 0.0f,
-	-0.5f, -0.1f, 0.0f,
-	 0.5f, -0.1f, 0.0f
-};
-
 // ID storage for different OpenGL objects
-GLuint trigAId;
-GLuint trigBId;
 GLuint vertexShaderId;
 GLuint fragmentShaderId;
 GLuint shaderProgramId;
@@ -56,12 +48,30 @@ int main() {
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
-	// Give a callback to close the window on ESC key press
+	// give a callback to close the window on ESC key press
 	glfwSetKeyCallback(window, CloseWindowCB);
 
-	// generate a triangle
-	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
-	CreateTriangle(&trigBId, trigBVertices, sizeof(trigBVertices));
+	// create triangle objects
+	triangle_t trigA = {
+		0,
+		{	 
+			 0.0f,  0.8f, 0.0f,
+			-0.5f,  0.1f, 0.0f,
+			 0.5f,  0.1f, 0.0f
+		}
+	};
+	triangle_t trigB = {
+		0,
+		{	 
+			 0.0f, -0.8f, 0.0f,
+			-0.5f, -0.1f, 0.0f,
+			 0.5f, -0.1f, 0.0f
+		}
+	};
+
+	// generate a triangle VAOs
+	CreateTriangle(&trigA.vaoId, trigA.vertices, sizeof(trigA.vertices));
+	CreateTriangle(&trigB.vaoId, trigB.vertices, sizeof(trigB.vertices));
 
 	// setup shaders
 	CreateShaders();
@@ -86,8 +96,8 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		DrawTriangle(&trigAId);
-		DrawTriangle(&trigBId);
+		DrawTriangle(&trigA.vaoId);
+		DrawTriangle(&trigB.vaoId);
 
 		// display results of rendering
 		glfwSwapBuffers(window);
