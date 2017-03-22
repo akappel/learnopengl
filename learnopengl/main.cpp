@@ -7,6 +7,7 @@ int InitGLFWwindow();
 int InitGLEW();
 
 // object creation
+void CreateVAO();
 void CreateVBO();
 void CreateShaders();
 void CreateVertexShader();
@@ -31,6 +32,7 @@ GLfloat vertices[] = {
 };
 
 // ID storage for different OpenGL objects
+GLuint vaoId;
 GLuint vboId;
 GLuint vertexShaderId;
 GLuint fragmentShaderId;
@@ -50,6 +52,9 @@ int main() {
 
 	// Give a callback to close the window on ESC key press
 	glfwSetKeyCallback(window, CloseWindowCB);
+
+	// setup our vertex array object for the subsequent VBO setup
+	CreateVAO();
 
 	// setup our vertex buffer object
 	CreateVBO();
@@ -74,6 +79,8 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 		// display results of rendering
 		glfwSwapBuffers(window);
 	}
@@ -82,10 +89,19 @@ int main() {
 	return 0;
 }
 
+void CreateVAO() {
+	glGenVertexArrays(1, &vaoId);
+	glBindVertexArray(vaoId);
+}
+
 void CreateVBO() {
 	glGenBuffers(1, &vboId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// tell OpenGL how to interpret our vertex data / link up the vertex data with the shader's vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
 }
 
 void CreateShaders() {
