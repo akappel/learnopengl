@@ -26,10 +26,12 @@ void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mo
 GLFWwindow* window;
 
 GLfloat vertices[] = {
-	 0.5f,  0.5f, 0.0f, // top right
-	 0.5f, -0.5f, 0.0f, // bottom right
-	-0.5f, -0.5f, 0.0f, // bottom left
-	-0.5f,  0.5f, 0.0f  // top left
+	 0.0f,  0.8f, 0.0f, 
+	-0.5f,  0.1f, 0.0f, 
+	 0.5f,  0.1f, 0.0f,
+	 0.0f, -0.8f, 0.0f,
+    -0.5f, -0.1f, 0.0f,
+	 0.5f, -0.1f, 0.0f
 };
 
 GLuint indices[] = {
@@ -65,7 +67,7 @@ int main() {
 
 	// setup our buffer objects
 	CreateVBO();
-	CreateEBO();
+	// CreateEBO();
 
 	// setup shaders
 	CreateShaders();
@@ -80,7 +82,7 @@ int main() {
 	DeleteShaders();
 
 	// setup wireframe mode
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	while (!glfwWindowShouldClose(window)) {
 		// check for events, such as a keypress
@@ -90,7 +92,7 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// display results of rendering
 		glfwSwapBuffers(window);

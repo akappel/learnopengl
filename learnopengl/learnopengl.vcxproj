@@ -22,6 +22,7 @@
     <ProjectGuid>{52576533-F3BB-46D5-935D-742E1D45B456}</ProjectGuid>
     <RootNamespace>learnopengl</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>learnopengl.hellotriangle</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
