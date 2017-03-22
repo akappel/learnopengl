@@ -25,21 +25,7 @@ void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mo
 
 GLFWwindow* window;
 
-GLfloat trigAVertices[] = {
-	 0.0f,  0.8f, 0.0f, 
-	-0.5f,  0.1f, 0.0f, 
-	 0.5f,  0.1f, 0.0f
-};
-
-GLfloat trigBVertices[] = {
-	 0.0f, -0.8f, 0.0f,
-	-0.5f, -0.1f, 0.0f,
-	 0.5f, -0.1f, 0.0f
-};
-
 // ID storage for different OpenGL objects
-GLuint trigAId;
-GLuint trigBId;
 GLuint vertexShaderId;
 GLuint fragmentShaderId;
 GLuint shaderProgramId;
@@ -59,7 +45,21 @@ int main() {
 	// Give a callback to close the window on ESC key press
 	glfwSetKeyCallback(window, CloseWindowCB);
 
-	// generate a triangle
+	// create triangle vertex arrays
+	GLfloat trigAVertices[] = {
+		0.0f,  0.8f, 0.0f,
+		-0.5f,  0.1f, 0.0f,
+		0.5f,  0.1f, 0.0f
+	};
+	GLfloat trigBVertices[] = {
+		0.0f, -0.8f, 0.0f,
+		-0.5f, -0.1f, 0.0f,
+		0.5f, -0.1f, 0.0f
+	};
+
+	// generate triangle VAOs
+	GLuint trigAId;
+	GLuint trigBId;
 	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
 	CreateTriangle(&trigBId, trigBVertices, sizeof(trigBVertices));
 
