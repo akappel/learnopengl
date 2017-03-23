@@ -8,30 +8,70 @@ int InitGLEW();
 
 // object creation
 void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size);
-void CreateShaders();
-void CreateVertexShader();
-void CreateFragmentShader();
-void CreateShaderProgram();
-void DeleteShaders();
-
-void DrawTriangle(GLuint* id);
+void CreateShader(GLuint* id, char* shader, GLenum type);
+void CreateShaderProgram(GLuint* id, GLuint vertexShaderId, GLuint fragmentShaderId);
 
 // some error handling
 void CheckForShaderErrors(GLuint shaderId);
 void CheckForProgramErrors(GLuint programId);
+
+void DrawTriangle(GLuint* id);
 
 // function callbacks
 void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 GLFWwindow* window;
 
-// ID storage for different OpenGL objects
-GLuint vertexShaderId;
-GLuint fragmentShaderId;
-GLuint shaderProgramId;
-
 int main() {
+	GLfloat trigAVertices[] = {
+		0.0f,  0.8f, 0.0f,
+		-0.5f,  0.1f, 0.0f,
+		0.5f,  0.1f, 0.0f
+	};
+	GLfloat trigBVertices[] = {
+		0.0f, -0.8f, 0.0f,
+		-0.5f, -0.1f, 0.0f,
+		0.5f, -0.1f, 0.0f
+	};
+	GLuint trigAId;
+	GLuint trigBId;
+	GLuint vertexShaderId;
+	GLuint orangeFragmentShaderId;
+	GLuint yellowFragmentShaderId;
+	GLuint orangeShaderProgramId;
+	GLuint yellowShaderProgramId;
+
 	int width, height;
+	char* vertexShader = {
+		"#version 400 core\n"\
+
+		"layout (location = 0) in vec3 position;\n"\
+
+		"void main()\n"\
+		"{\n"\
+		"  gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"\
+		"}\n"
+	};
+	char* orangeFragmentShader = {
+		"#version 400 core\n"\
+
+		"out vec4 color;\n"\
+
+		"void main()\n"\
+		"{\n"\
+		"  color = vec4(1.0f, 0.5f, 0.2f, 1.0);\n"\
+		"}\n"
+	};
+	char* yellowFragmentShader = {
+		"#version 400 core\n"\
+
+		"out vec4 color;\n"\
+
+		"void main()\n"\
+		"{\n"\
+		"  color = vec4(1.0f, 1.0f, 0.0f, 1.0);\n"\
+		"}\n"
+	};
 
 	// boilerplate setup for GLFW window context and GLEW extension seeking
 	if (InitGLFWwindow() == -1 || InitGLEW() == -1) {
@@ -45,35 +85,31 @@ int main() {
 	// Give a callback to close the window on ESC key press
 	glfwSetKeyCallback(window, CloseWindowCB);
 
-	// create triangle vertex arrays
-	GLfloat trigAVertices[] = {
-		0.0f,  0.8f, 0.0f,
-		-0.5f,  0.1f, 0.0f,
-		0.5f,  0.1f, 0.0f
-	};
-	GLfloat trigBVertices[] = {
-		0.0f, -0.8f, 0.0f,
-		-0.5f, -0.1f, 0.0f,
-		0.5f, -0.1f, 0.0f
-	};
-
 	// generate triangle VAOs
-	GLuint trigAId;
-	GLuint trigBId;
 	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
 	CreateTriangle(&trigBId, trigBVertices, sizeof(trigBVertices));
 
 	// setup shaders
-	CreateShaders();
+	CreateShader(&vertexShaderId, vertexShader, GL_VERTEX_SHADER);
+	CheckForShaderErrors(vertexShaderId);
+
+	CreateShader(&orangeFragmentShaderId, orangeFragmentShader, GL_FRAGMENT_SHADER);
+	CheckForShaderErrors(orangeFragmentShaderId);
+
+	CreateShader(&yellowFragmentShaderId, yellowFragmentShader, GL_FRAGMENT_SHADER);
+	CheckForShaderErrors(yellowFragmentShaderId);
 
 	// setup program object to tie shaders together
-	CreateShaderProgram();
+	CreateShaderProgram(&orangeShaderProgramId, vertexShaderId, orangeFragmentShaderId);
+	CheckForProgramErrors(orangeShaderProgramId);
 
-	// activate the shaders
-	glUseProgram(shaderProgramId);
+	CreateShaderProgram(&yellowShaderProgramId, vertexShaderId, yellowFragmentShaderId);
+	CheckForProgramErrors(yellowShaderProgramId);
 	
 	// delete the shaders, as they have now been linked into a program
-	DeleteShaders();
+	glDeleteShader(vertexShaderId);
+	glDeleteShader(orangeFragmentShaderId);
+	glDeleteShader(yellowFragmentShaderId);
 
 	// setup wireframe mode
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -86,12 +122,21 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glUseProgram(orangeShaderProgramId);
 		DrawTriangle(&trigAId);
+		glUseProgram(0);
+
+		glUseProgram(yellowShaderProgramId);
 		DrawTriangle(&trigBId);
+		glUseProgram(0);
 
 		// display results of rendering
 		glfwSwapBuffers(window);
 	}
+
+	// clean up shader programs
+	glDeleteProgram(orangeShaderProgramId);
+	glDeleteProgram(yellowShaderProgramId);
 
 	glfwTerminate();
 	return 0;
@@ -124,60 +169,17 @@ void DrawTriangle(GLuint* id) {
 	glBindVertexArray(0);
 }
 
-void CreateShaders() {
-	CreateVertexShader();
-	CreateFragmentShader();
+void CreateShader(GLuint* id, char* shader, GLenum type) {
+	*id = glCreateShader(type);
+	glShaderSource(*id, 1, &shader, NULL);
+	glCompileShader(*id);
 }
 
-void CreateVertexShader() {
-	char* vertexShaderString = {
-		"#version 400 core\n"\
-
-		"layout (location = 0) in vec3 position;\n"\
-
-		"void main()\n"\
-		"{\n"\
-		"  gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"\
-		"}\n"
-	};
-
-	vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderId, 1, &vertexShaderString, NULL);
-	glCompileShader(vertexShaderId);
-
-	// check for shader compilation errors
-	CheckForShaderErrors(vertexShaderId);
-}
-
-void CreateFragmentShader() {
-	char* fragmentShaderString = {
-		"#version 400 core\n"\
-
-		"out vec4 color;\n"\
-
-		"void main()\n"\
-		"{\n"\
-		"  color = vec4(1.0f, 0.5f, 0.2f, 1.0);\n"\
-		"}\n"
-	};
-
-	fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderId, 1, &fragmentShaderString, NULL);
-	glCompileShader(fragmentShaderId);
-	CheckForShaderErrors(fragmentShaderId);
-}
-
-void CreateShaderProgram() {
-	shaderProgramId = glCreateProgram();
-	glAttachShader(shaderProgramId, vertexShaderId);
-	glAttachShader(shaderProgramId, fragmentShaderId);
-	glLinkProgram(shaderProgramId);
-	CheckForProgramErrors(shaderProgramId);
-}
-
-void DeleteShaders() {
-	glDeleteShader(vertexShaderId);
-	glDeleteShader(fragmentShaderId);
+void CreateShaderProgram(GLuint* id, GLuint vertexShaderId, GLuint fragmentShaderId) {
+	*id = glCreateProgram();
+	glAttachShader(*id, vertexShaderId);
+	glAttachShader(*id, fragmentShaderId);
+	glLinkProgram(*id);
 }
 
 void CheckForShaderErrors(GLuint shaderId) {
@@ -187,7 +189,7 @@ void CheckForShaderErrors(GLuint shaderId) {
 
 	if (!success) {
 		glGetShaderInfoLog(shaderId, sizeof(infoLog), NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 }
 
@@ -225,6 +227,7 @@ int InitGLFWwindow() {
 		return -1;
 	}
 
+	
 	glfwMakeContextCurrent(window);
 }
 
