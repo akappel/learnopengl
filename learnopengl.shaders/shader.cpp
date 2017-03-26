@@ -101,3 +101,8 @@ void Shader::CheckForProgramErrors(GLuint programId)
 		std::cout << "ERROR::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
 	}
 }
+
+GLuint Shader::GetProgramId()
+{
+	return this->ProgramId;
+}

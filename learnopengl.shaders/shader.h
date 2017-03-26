@@ -16,6 +16,8 @@ public:
 	// use the program
 	void Use();
 
+	GLuint GetProgramId();
+
 private:
 	GLuint ProgramId;
 	void CreateShader(GLuint* id, const char* shader, GLenum type);

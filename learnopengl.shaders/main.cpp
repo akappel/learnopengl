@@ -53,6 +53,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.Use();
+		glUniform1f(glGetUniformLocation(shader.GetProgramId(), "horizontalOffset"), 0.0f);
 		DrawTriangle(&trigAId);
 		glUseProgram(0);
 
