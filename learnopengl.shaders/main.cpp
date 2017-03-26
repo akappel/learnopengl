@@ -51,13 +51,13 @@ int main() {
 	char* orangeFragmentShader = {
 		"#version 400 core\n"\
 
-		"in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)\n"\
+		"uniform vec4 ourColor; // set this variable in the OpenGL code\n"\
 
 		"out vec4 color;\n"\
 
 		"void main()\n"\
 		"{\n"\
-		"  color = vertexColor;\n"\
+		"  color = ourColor;\n"\
 		"}\n"
 	};
 
@@ -103,7 +103,14 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// provide information for our uniform attribute
+		GLfloat timeValue = glfwGetTime();
+		GLfloat greenValue = (sin(timeValue * 3) / 2) + 0.5; // -0.5 - 0.5, then add 0.5 == 0.0 - 1.0
+		GLint vertexColorLocation = glGetUniformLocation(orangeShaderProgramId, "ourColor");
+
 		glUseProgram(orangeShaderProgramId);
+		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
 		DrawTriangle(&trigAId);
 		glUseProgram(0);
 
