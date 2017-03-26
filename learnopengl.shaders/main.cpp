@@ -38,21 +38,26 @@ int main() {
 	char* vertexShader = {
 		"#version 400 core\n"\
 
-		"layout (location = 0) in vec3 position;\n"\
+		"layout (location = 0) in vec3 position; // the position variable has attribute position 0\n"\
+
+		"out vec4 vertexColor; // specify a color output to the fragment shader\n"\
 
 		"void main()\n"\
 		"{\n"\
-		"  gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"\
+		"  gl_Position = vec4(position, 1.0); // see how we directly give a vec3 to vec4's constructor (i.e. \"Swizzling\")\n"\
+		"  vertexColor = vec4(0.5f, 0.0f, 0.0f, 1.0f); // set the output variable to a dark-red color\n"\
 		"}\n"
 	};
 	char* orangeFragmentShader = {
 		"#version 400 core\n"\
 
+		"in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)\n"\
+
 		"out vec4 color;\n"\
 
 		"void main()\n"\
 		"{\n"\
-		"  color = vec4(1.0f, 0.5f, 0.2f, 1.0);\n"\
+		"  color = vertexColor;\n"\
 		"}\n"
 	};
 
