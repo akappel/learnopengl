@@ -24,22 +24,15 @@ GLFWwindow* window;
 
 int main() {
 	GLfloat trigAVertices[] = {
-		0.0f,  0.8f, 0.0f,
-		-0.5f,  0.1f, 0.0f,
-		0.5f,  0.1f, 0.0f
+		 0.0f,  0.5f, 0.0f,
+		-0.5f, -0.5f, 0.0f,
+		 0.5f, -0.5f, 0.0f
 	};
-	GLfloat trigBVertices[] = {
-		0.0f, -0.8f, 0.0f,
-		-0.5f, -0.1f, 0.0f,
-		0.5f, -0.1f, 0.0f
-	};
+
 	GLuint trigAId;
-	GLuint trigBId;
 	GLuint vertexShaderId;
 	GLuint orangeFragmentShaderId;
-	GLuint yellowFragmentShaderId;
 	GLuint orangeShaderProgramId;
-	GLuint yellowShaderProgramId;
 
 	int width, height;
 	char* vertexShader = {
@@ -62,16 +55,7 @@ int main() {
 		"  color = vec4(1.0f, 0.5f, 0.2f, 1.0);\n"\
 		"}\n"
 	};
-	char* yellowFragmentShader = {
-		"#version 400 core\n"\
 
-		"out vec4 color;\n"\
-
-		"void main()\n"\
-		"{\n"\
-		"  color = vec4(1.0f, 1.0f, 0.0f, 1.0);\n"\
-		"}\n"
-	};
 
 	// boilerplate setup for GLFW window context and GLEW extension seeking
 	if (InitGLFWwindow() == -1 || InitGLEW() == -1) {
@@ -87,7 +71,6 @@ int main() {
 
 	// generate triangle VAOs
 	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
-	CreateTriangle(&trigBId, trigBVertices, sizeof(trigBVertices));
 
 	// setup shaders
 	CreateShader(&vertexShaderId, vertexShader, GL_VERTEX_SHADER);
@@ -96,20 +79,13 @@ int main() {
 	CreateShader(&orangeFragmentShaderId, orangeFragmentShader, GL_FRAGMENT_SHADER);
 	CheckForShaderErrors(orangeFragmentShaderId);
 
-	CreateShader(&yellowFragmentShaderId, yellowFragmentShader, GL_FRAGMENT_SHADER);
-	CheckForShaderErrors(yellowFragmentShaderId);
-
 	// setup program object to tie shaders together
 	CreateShaderProgram(&orangeShaderProgramId, vertexShaderId, orangeFragmentShaderId);
 	CheckForProgramErrors(orangeShaderProgramId);
 
-	CreateShaderProgram(&yellowShaderProgramId, vertexShaderId, yellowFragmentShaderId);
-	CheckForProgramErrors(yellowShaderProgramId);
-
 	// delete the shaders, as they have now been linked into a program
 	glDeleteShader(vertexShaderId);
 	glDeleteShader(orangeFragmentShaderId);
-	glDeleteShader(yellowFragmentShaderId);
 
 	// setup wireframe mode
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -126,17 +102,12 @@ int main() {
 		DrawTriangle(&trigAId);
 		glUseProgram(0);
 
-		glUseProgram(yellowShaderProgramId);
-		DrawTriangle(&trigBId);
-		glUseProgram(0);
-
 		// display results of rendering
 		glfwSwapBuffers(window);
 	}
 
 	// clean up shader programs
 	glDeleteProgram(orangeShaderProgramId);
-	glDeleteProgram(yellowShaderProgramId);
 
 	glfwTerminate();
 	return 0;
