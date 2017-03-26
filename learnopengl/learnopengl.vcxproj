@@ -70,12 +70,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\dev\third-party\glfw\include;D:\dev\third-party\glew-2.0.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\dev\third-party\glfw\build\src\Debug;D:\dev\third-party\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\dev\third-party\libdrop\include</IncludePath>
+    <LibraryPath>D:\dev\third-party\libdrop\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>D:\dev\third-party\glfw\include;D:\dev\third-party\glew-2.0.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\dev\third-party\glfw\build\src\Debug;D:\dev\third-party\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\dev\third-party\libdrop\include</IncludePath>
+    <LibraryPath>D:\dev\third-party\libdrop\lib</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
