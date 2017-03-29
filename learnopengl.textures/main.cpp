@@ -12,7 +12,7 @@ int InitGLEW();
 // object creation
 void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size);
 void CreateRect(GLuint* id, GLfloat* vertices, GLuint* indices, GLuint sizeVertices, GLuint sizeIndices);
-void CreateTexture(GLuint *texture);
+void CreateTexture(GLuint *textureId, char* filename);
 void DrawTriangle(GLuint* id);
 void DrawRect(GLuint* id);
 
@@ -49,7 +49,8 @@ int main()
 	};
 	GLuint rectAId;
 
-	GLuint textureId;
+	GLuint containerTexId;
+	GLuint awesomefaceTexId;
 	Shader shader("./shader.vert", "./shader.frag");
 
 	// setup viewport width and height based on retrieved values from GLFW
@@ -66,9 +67,9 @@ int main()
 	// generate rect VAO
 	CreateRect(&rectAId, rectAVertices, indices, sizeof(rectAVertices), sizeof(indices));
 
-	// setup texture
-	CreateTexture(&textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
+	// setup textures
+	CreateTexture(&containerTexId, "./container.jpg");
+	CreateTexture(&awesomefaceTexId, "./awesomeface.png");
 
 	while (!glfwWindowShouldClose(window)) {
 		// check for events, such as a keypress
@@ -79,7 +80,12 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.Use();
-		// DrawTriangle(&trigAId);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, containerTexId);
+		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture0"), 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, awesomefaceTexId);
+		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture1"), 1);
 		DrawRect(&rectAId);
 		glUseProgram(0);
 
@@ -91,10 +97,10 @@ int main()
 	return 0;
 }
 
-void CreateTexture(GLuint *texture)
+void CreateTexture(GLuint *textureId, char* filename)
 {
-	glGenTextures(1, texture);
-	glBindTexture(GL_TEXTURE_2D, *texture);
+	glGenTextures(1, textureId);
+	glBindTexture(GL_TEXTURE_2D, *textureId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	// Set texture filtering parameters
@@ -102,7 +108,7 @@ void CreateTexture(GLuint *texture)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int texWidth, texHeight;
-	unsigned char* image = SOIL_load_image("./container.jpg", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image(filename, &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
