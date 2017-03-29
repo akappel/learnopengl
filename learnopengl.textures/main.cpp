@@ -52,9 +52,6 @@ int main()
 	GLuint textureId;
 	Shader shader("./shader.vert", "./shader.frag");
 
-	// setup texture
-	CreateTexture(&textureId);
-
 	// setup viewport width and height based on retrieved values from GLFW
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -69,6 +66,10 @@ int main()
 	// generate rect VAO
 	CreateRect(&rectAId, rectAVertices, indices, sizeof(rectAVertices), sizeof(indices));
 
+	// setup texture
+	CreateTexture(&textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+
 	while (!glfwWindowShouldClose(window)) {
 		// check for events, such as a keypress
 		glfwPollEvents();
@@ -78,8 +79,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.Use();
-		glUniform1f(glGetUniformLocation(shader.GetProgramId(), "horizontalOffset"), 0.0f);
-		DrawTriangle(&trigAId);
+		// DrawTriangle(&trigAId);
+		DrawRect(&rectAId);
 		glUseProgram(0);
 
 		// display results of rendering
@@ -93,10 +94,16 @@ int main()
 void CreateTexture(GLuint *texture)
 {
 	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// Set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int texWidth, texHeight;
 	unsigned char* image = SOIL_load_image("./container.jpg", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
-	glBindTexture(GL_TEXTURE_2D, *texture);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -144,6 +151,11 @@ void CreateRect(GLuint* id, GLfloat* vertices, GLuint* indices, GLuint sizeVerti
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
 	glBufferData(GL_ARRAY_BUFFER, sizeVertices, vertices, GL_STATIC_DRAW);
 
+	GLuint eboId;
+	glGenBuffers(1, &eboId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeIndices, indices, GL_STATIC_DRAW);
+
 	// position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
@@ -156,16 +168,10 @@ void CreateRect(GLuint* id, GLfloat* vertices, GLuint* indices, GLuint sizeVerti
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
-	// finally, setup our indice EBO
-	GLuint eboId;
-	glGenBuffers(1, &eboId);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeIndices, indices, GL_STATIC_DRAW);
-
 	// cleanup
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 
 }
 
