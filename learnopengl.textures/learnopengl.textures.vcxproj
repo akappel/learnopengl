@@ -127,7 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag" />
-    <None Include="shader.vs" />
+    <None Include="shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h" />

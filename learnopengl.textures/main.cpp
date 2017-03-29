@@ -50,7 +50,7 @@ int main()
 	GLuint rectAId;
 
 	GLuint textureId;
-	Shader shader("./shader.vs", "./shader.frag");
+	Shader shader("./shader.vert", "./shader.frag");
 
 	// setup texture
 	CreateTexture(&textureId);
