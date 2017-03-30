@@ -12,14 +12,15 @@ int InitGLEW();
 // object creation
 void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size);
 void CreateRect(GLuint* id, GLfloat* vertices, GLuint* indices, GLuint sizeVertices, GLuint sizeIndices);
-void CreateTexture(GLuint *textureId, char* filename);
+void CreateTexture(GLuint *textureId, char* filename, GLenum wrapType, GLenum texFilterType);
 void DrawTriangle(GLuint* id);
 void DrawRect(GLuint* id);
 
 // function callbacks
-void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mode);
+void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 GLFWwindow* window;
+GLfloat mixValue = 0.0f;
 
 int main()
 {
@@ -58,8 +59,8 @@ int main()
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
-	// Give a callback to close the window on ESC key press
-	glfwSetKeyCallback(window, CloseWindowCB);
+	// Give a callback for handling keypresses
+	glfwSetKeyCallback(window, KeyPressCB);
 
 	// generate triangle VAOs
 	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
@@ -68,8 +69,8 @@ int main()
 	CreateRect(&rectAId, rectAVertices, indices, sizeof(rectAVertices), sizeof(indices));
 
 	// setup textures
-	CreateTexture(&containerTexId, "./container.jpg");
-	CreateTexture(&awesomefaceTexId, "./awesomeface.png");
+	CreateTexture(&containerTexId, "./container.jpg", GL_REPEAT, GL_LINEAR);
+	CreateTexture(&awesomefaceTexId, "./awesomeface.png", GL_REPEAT, GL_LINEAR);
 
 	while (!glfwWindowShouldClose(window)) {
 		// check for events, such as a keypress
@@ -80,12 +81,17 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.Use();
+		// set uniform mix value
+		glUniform1f(glGetUniformLocation(shader.GetProgramId(), "mixValue"), mixValue);
+
+		// setup multiple textures
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, containerTexId);
 		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture0"), 0);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, awesomefaceTexId);
 		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture1"), 1);
+
 		DrawRect(&rectAId);
 		glUseProgram(0);
 
@@ -97,15 +103,15 @@ int main()
 	return 0;
 }
 
-void CreateTexture(GLuint *textureId, char* filename)
+void CreateTexture(GLuint *textureId, char* filename, GLenum wrapType, GLenum texFilterType)
 {
 	glGenTextures(1, textureId);
 	glBindTexture(GL_TEXTURE_2D, *textureId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapType);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapType);
 	// Set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texFilterType);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texFilterType);
 
 	int texWidth, texHeight;
 	unsigned char* image = SOIL_load_image(filename, &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
@@ -225,9 +231,25 @@ int InitGLFWwindow()
 	glfwMakeContextCurrent(window);
 }
 
-void CloseWindowCB(GLFWwindow* window, int key, int scancode, int action, int mode)
+void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, GL_TRUE);
+
+	if (action == GLFW_REPEAT) {
+		switch (key)
+		{
+		case GLFW_KEY_UP:
+			mixValue > 1.0f ? mixValue = 1.0f : mixValue += 0.01f;
+			break;
+		case GLFW_KEY_DOWN:
+			mixValue < 0.0f ? mixValue = 0.0f : mixValue -= 0.01f;
+			break;
+		default:
+			break;
+		}
+	}
+	else if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_ESCAPE) {
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
 	}
 }
