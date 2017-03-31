@@ -14,9 +14,11 @@ int InitGLEW();
 
 // object creation
 void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size);
+void CreateCube(GLuint* id, GLfloat* vertices, GLuint size);
 void CreateRect(GLuint* id, GLfloat* vertices, GLuint* indices, GLuint sizeVertices, GLuint sizeIndices);
 void CreateTexture(GLuint *textureId, char* filename, GLenum wrapType, GLenum texFilterType);
 void DrawTriangle(GLuint* id);
+void DrawCube(GLuint* id);
 void DrawRect(GLuint* id);
 
 // function callbacks
@@ -34,11 +36,55 @@ int main()
 		 0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
 	};
 	GLfloat rectAVertices[] = {
-		 // Positions          // Colors           // Texture Coords
+		 // positions          // colors           // texture coords
 		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
 		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
 		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom Left
 		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left 
+	};
+	GLfloat cubeAVertices[] = {
+		// positions          // texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 	GLuint indices[] = {
 		0, 1, 3,
@@ -46,6 +92,7 @@ int main()
 	};
 	GLuint trigAId;
 	GLuint rectAId;
+	GLuint cubeAId;
 	GLuint containerTexId;
 	GLuint awesomefaceTexId;
 
@@ -71,6 +118,9 @@ int main()
 	// generate rect VAO
 	CreateRect(&rectAId, rectAVertices, indices, sizeof(rectAVertices), sizeof(indices));
 
+	// generate cube VAO
+	CreateCube(&cubeAId, cubeAVertices, sizeof(cubeAVertices));
+
 	// setup textures
 	CreateTexture(&containerTexId, "./container.jpg", GL_REPEAT, GL_LINEAR);
 	CreateTexture(&awesomefaceTexId, "./awesomeface.png", GL_REPEAT, GL_LINEAR);
@@ -81,7 +131,7 @@ int main()
 
 		// Rendering commands here
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.Use();
 		
@@ -99,7 +149,7 @@ int main()
 
 		// setup model transform
 		glm::mat4 modelTransform;
-		modelTransform = glm::rotate(modelTransform, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelTransform = glm::rotate(modelTransform, (GLfloat)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
 		// setup view/eye transform
 		glm::mat4 viewTransform;
@@ -113,7 +163,8 @@ int main()
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(viewTransform));
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "projection"), 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-		DrawRect(&rectAId);
+		DrawCube(&cubeAId);
+		// DrawRect(&rectAId);
 		glUseProgram(0);
 
 		// display results of rendering
@@ -166,9 +217,35 @@ void CreateTriangle(GLuint* id, GLfloat* vertices, GLuint size)
 	glEnableVertexAttribArray(1);
 
 	// cleanup
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+}
+
+void CreateCube(GLuint* id, GLfloat* vertices, GLuint size)
+{
+	glGenVertexArrays(1, id);
+
+	// we first need to bind the VAO
+	glBindVertexArray(*id);
+
+	// now generate, bind, and attribute our VBO
+	GLuint vboId;
+	glGenBuffers(1, &vboId);
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	// texture attribute; jump straight to 2 since we're omitting color but still targeting the same attribute location
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	// cleanup
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void CreateRect(GLuint* id, GLfloat* vertices, GLuint* indices, GLuint sizeVertices, GLuint sizeIndices)
@@ -215,6 +292,13 @@ void DrawTriangle(GLuint* id)
 	glBindVertexArray(0);
 }
 
+void DrawCube(GLuint* id)
+{
+	glBindVertexArray(*id);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+
 void DrawRect(GLuint* id)
 {
 	glBindVertexArray(*id);
@@ -231,6 +315,8 @@ int InitGLEW()
 	}
 
 	std::cout << "INFO: OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 int InitGLFWwindow()
