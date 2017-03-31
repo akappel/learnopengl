@@ -26,6 +26,7 @@ void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode)
 
 GLFWwindow* window;
 GLfloat mixValue = 0.0f;
+GLfloat yValue = 0.0f;
 
 int main()
 {
@@ -151,23 +152,23 @@ int main()
 		glm::vec3 cubePositions[] = {
 			glm::vec3( 0.0f,  0.0f,  0.0f),
 			glm::vec3( 2.0f,  5.0f, -15.0f),
-			glm::vec3(-1.5f, -2.2f, -2.5f),
 			glm::vec3(-3.8f, -2.0f, -12.3f),
+			glm::vec3(-1.5f, -2.2f, -2.5f),			
 			glm::vec3( 2.4f, -0.4f, -3.5f),
+			glm::vec3( 1.5f,  2.0f, -2.5f),
 			glm::vec3(-1.7f,  3.0f, -7.5f),
 			glm::vec3( 1.3f, -2.0f, -2.5f),
-			glm::vec3( 1.5f,  2.0f, -2.5f),
 			glm::vec3( 1.5f,  0.2f, -1.5f),
 			glm::vec3(-1.3f,  1.0f, -1.5f)
 		};
 
 		// setup view/eye transform
 		glm::mat4 viewTransform;
-		viewTransform = glm::translate(viewTransform, glm::vec3(0.0f, 0.0f, -3.0f));
+		viewTransform = glm::translate(viewTransform, glm::vec3(0.0f, yValue, -3.0f));
 
 		// setup projection transform
 		glm::mat4 projectionTransform;
-		projectionTransform = glm::perspective(glm::radians(45.0f), (GLfloat)width /height, 0.1f, 100.0f);
+		projectionTransform = glm::perspective(glm::radians(45.0f), (GLfloat)width/height, 0.1f, 100.0f);
 
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(viewTransform));
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "projection"), 1, GL_FALSE, glm::value_ptr(projectionTransform));
@@ -178,7 +179,12 @@ int main()
 			glm::mat4 modelTransform;
 			modelTransform = glm::translate(modelTransform, cubePositions[i]);
 			GLfloat angle = glm::radians(20.0f * (i + 1));
-			modelTransform = glm::rotate(modelTransform, (GLfloat)glfwGetTime() * angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			if (i % 2 == 0) {
+				modelTransform = glm::rotate(modelTransform, (GLfloat)glfwGetTime() * angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			}
+			else {
+				modelTransform = glm::rotate(modelTransform, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			}
 			glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "model"), 1, GL_FALSE, glm::value_ptr(modelTransform));
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -371,13 +377,30 @@ void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode)
 		case GLFW_KEY_DOWN:
 			mixValue < 0.0f ? mixValue = 0.0f : mixValue -= 0.01f;
 			break;
+		case GLFW_KEY_W:
+			yValue -= 0.05f;
+			break;
+		case GLFW_KEY_S:
+			yValue += 0.05f;
+			break;
 		default:
 			break;
 		}
 	}
 	else if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_ESCAPE) {
+		switch (key)
+		{
+		case GLFW_KEY_ESCAPE:
 			glfwSetWindowShouldClose(window, GL_TRUE);
+			break;
+		case GLFW_KEY_UP:
+			mixValue > 1.0f ? mixValue = 1.0f : mixValue += 0.01f;
+			break;
+		case GLFW_KEY_DOWN:
+			mixValue < 0.0f ? mixValue = 0.0f : mixValue -= 0.01f;
+			break;
+		default:
+			break;
 		}
 	}
 }
