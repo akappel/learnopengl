@@ -147,9 +147,19 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, awesomefaceTexId);
 		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture1"), 1);
 
-		// setup model transform
-		glm::mat4 modelTransform;
-		modelTransform = glm::rotate(modelTransform, (GLfloat)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+		// setup cube positions
+		glm::vec3 cubePositions[] = {
+			glm::vec3( 0.0f,  0.0f,  0.0f),
+			glm::vec3( 2.0f,  5.0f, -15.0f),
+			glm::vec3(-1.5f, -2.2f, -2.5f),
+			glm::vec3(-3.8f, -2.0f, -12.3f),
+			glm::vec3( 2.4f, -0.4f, -3.5f),
+			glm::vec3(-1.7f,  3.0f, -7.5f),
+			glm::vec3( 1.3f, -2.0f, -2.5f),
+			glm::vec3( 1.5f,  2.0f, -2.5f),
+			glm::vec3( 1.5f,  0.2f, -1.5f),
+			glm::vec3(-1.3f,  1.0f, -1.5f)
+		};
 
 		// setup view/eye transform
 		glm::mat4 viewTransform;
@@ -159,11 +169,22 @@ int main()
 		glm::mat4 projectionTransform;
 		projectionTransform = glm::perspective(glm::radians(45.0f), (GLfloat)width /height, 0.1f, 100.0f);
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "model"), 1, GL_FALSE, glm::value_ptr(modelTransform));
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(viewTransform));
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "projection"), 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-		DrawCube(&cubeAId);
+		// custom draw iteration for each position
+		glBindVertexArray(cubeAId);
+		for (GLuint i = 0; i < 10; i++) {
+			glm::mat4 modelTransform;
+			modelTransform = glm::translate(modelTransform, cubePositions[i]);
+			GLfloat angle = glm::radians(20.0f * (i + 1));
+			modelTransform = glm::rotate(modelTransform, (GLfloat)glfwGetTime() * angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "model"), 1, GL_FALSE, glm::value_ptr(modelTransform));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		// DrawCube(&cubeAId);
 		// DrawRect(&rectAId);
 		glUseProgram(0);
 
