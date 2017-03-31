@@ -1,6 +1,9 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <SOIL.h>
 #include <iostream>
 
@@ -24,19 +27,12 @@ GLfloat mixValue = 0.0f;
 
 int main()
 {
-	// boilerplate setup for GLFW window context and GLEW extension seeking
-	if (InitGLFWwindow() == -1 || InitGLEW() == -1) {
-		return -1;
-	}
-
 	GLfloat trigAVertices[] = {
-		// positions		// colors
+		 // positions		// colors
 		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
 		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
 		 0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
 	};
-	GLuint trigAId;
-
 	GLfloat rectAVertices[] = {
 		 // Positions          // Colors           // Texture Coords
 		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
@@ -48,10 +44,17 @@ int main()
 		0, 1, 3,
 		1, 2, 3
 	};
+	GLuint trigAId;
 	GLuint rectAId;
-
 	GLuint containerTexId;
 	GLuint awesomefaceTexId;
+
+	// boilerplate setup for GLFW window context and GLEW extension seeking
+	if (InitGLFWwindow() == -1 || InitGLEW() == -1) {
+		return -1;
+	}
+	
+	// setup our shader for use
 	Shader shader("./shader.vert", "./shader.frag");
 
 	// setup viewport width and height based on retrieved values from GLFW
@@ -81,6 +84,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.Use();
+		
+
 		// set uniform mix value
 		glUniform1f(glGetUniformLocation(shader.GetProgramId(), "mixValue"), mixValue);
 
@@ -92,6 +97,19 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, awesomefaceTexId);
 		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture1"), 1);
 
+		glm::mat4 rotater;
+		glm::mat4 scaler;
+
+		rotater = glm::translate(rotater, glm::vec3(0.5f, -0.5f, 0.0f));
+		rotater = glm::rotate(rotater, (GLfloat)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // last transform added so it's the first transform multiplied against the vector
+		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "transform"), 1, GL_FALSE, glm::value_ptr(rotater));
+		DrawRect(&rectAId);
+
+		
+		
+		scaler = glm::translate(scaler, glm::vec3(-0.5f, 0.5f, 0.0f));
+		scaler = glm::scale(scaler, glm::vec3(1.0f, abs(sin((GLfloat)glfwGetTime())), 1.0f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "transform"), 1, GL_FALSE, glm::value_ptr(scaler));
 		DrawRect(&rectAId);
 		glUseProgram(0);
 
