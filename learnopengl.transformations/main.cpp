@@ -97,17 +97,22 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, awesomefaceTexId);
 		glUniform1i(glGetUniformLocation(shader.GetProgramId(), "ourTexture1"), 1);
 
-		glm::mat4 rotater;
-		glm::mat4 scaler;
+		// setup model transform
+		glm::mat4 modelTransform;
+		modelTransform = glm::rotate(modelTransform, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-		rotater = glm::translate(rotater, glm::vec3(0.5f, -0.5f, 0.0f));
-		rotater = glm::rotate(rotater, (GLfloat)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // last transform added so it's the first transform multiplied against the vector
-		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "transform"), 1, GL_FALSE, glm::value_ptr(rotater));
-		DrawRect(&rectAId);
-		
-		scaler = glm::translate(scaler, glm::vec3(-0.5f, 0.5f, 0.0f));
-		scaler = glm::scale(scaler, glm::vec3(1.0f, abs(sin((GLfloat)glfwGetTime())), 1.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "transform"), 1, GL_FALSE, glm::value_ptr(scaler));
+		// setup view/eye transform
+		glm::mat4 viewTransform;
+		viewTransform = glm::translate(viewTransform, glm::vec3(0.0f, 0.0f, -3.0f));
+
+		// setup projection transform
+		glm::mat4 projectionTransform;
+		projectionTransform = glm::perspective(glm::radians(45.0f), (GLfloat)width /height, 0.1f, 100.0f);
+
+		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "model"), 1, GL_FALSE, glm::value_ptr(modelTransform));
+		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(viewTransform));
+		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "projection"), 1, GL_FALSE, glm::value_ptr(projectionTransform));
+
 		DrawRect(&rectAId);
 		glUseProgram(0);
 
