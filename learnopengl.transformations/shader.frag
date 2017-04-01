@@ -11,7 +11,7 @@ uniform float mixValue;
 
 void main()
 {
-	color = mix(texture(ourTexture0, ourTexCoord), texture(ourTexture1, vec2(ourTexCoord.x, ourTexCoord.y)), mixValue);
+	color = mix(texture(ourTexture0, ourTexCoord), texture(ourTexture1, vec2(-ourTexCoord.x, ourTexCoord.y)), mixValue);
 	// color = texture(ourTexture, ourTexCoord) * vec4(ourColor, 1.0f);
 	// color = vec4(ourColor, 1.0f);
 }
