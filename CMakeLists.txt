@@ -8,10 +8,11 @@ set(THIRD_PARTY_PATH ${CMAKE_BINARY_DIR}/third-party)
 set(THIRD_PARTY_INCLUDE ${THIRD_PARTY_PATH}/include)
 set(THIRD_PARTY_LIB ${THIRD_PARTY_PATH}/lib)
 
-set(CMAKE_INCLUDE_PATH ${THIRD_PARTY_INCLUDE})
-set(CMAKE_LIB_PATH ${THIRD_PARTY_LIB})
+include_directories(${THIRD_PARTY_INCLUDE})
+link_directories(${THIRD_PARTY_LIB})
 
 # build external libraries
+include(CMakeLists-ExternalProjects.txt)
 
 # applications
 add_subdirectory(learnopengl.hellotriangle)
