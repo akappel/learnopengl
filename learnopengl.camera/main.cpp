@@ -41,7 +41,7 @@ int main()
 		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
 		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
 		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom Left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left 
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left
 	};
 	GLfloat cubeAVertices[] = {
 		// positions          // texture coords
@@ -101,7 +101,7 @@ int main()
 	if (InitGLFWwindow() == -1 || InitGLEW() == -1) {
 		return -1;
 	}
-	
+
 	// setup our shader for use
 	Shader shader("./shader.vert", "./shader.frag");
 
@@ -135,7 +135,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.Use();
-		
+
 
 		// set uniform mix value
 		glUniform1f(glGetUniformLocation(shader.GetProgramId(), "mixValue"), mixValue);
@@ -153,7 +153,7 @@ int main()
 			glm::vec3( 0.0f,  0.0f,  0.0f),
 			glm::vec3( 2.0f,  5.0f, -15.0f),
 			glm::vec3(-3.8f, -2.0f, -12.3f),
-			glm::vec3(-1.5f, -2.2f, -2.5f),			
+			glm::vec3(-1.5f, -2.2f, -2.5f),
 			glm::vec3( 2.4f, -0.4f, -3.5f),
 			glm::vec3( 1.5f,  2.0f, -2.5f),
 			glm::vec3(-1.7f,  3.0f, -7.5f),
@@ -349,8 +349,9 @@ int InitGLEW()
 int InitGLFWwindow()
 {
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
