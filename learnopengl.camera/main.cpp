@@ -135,9 +135,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.Use();
-		
 
-		// set uniform mix value
+		// set uniform mix value for the textures
 		glUniform1f(glGetUniformLocation(shader.GetProgramId(), "mixValue"), mixValue);
 
 		// setup multiple textures
@@ -162,9 +161,31 @@ int main()
 			glm::vec3(-1.3f,  1.0f, -1.5f)
 		};
 
-		// setup view/eye transform
+		// setup camera
+		// glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f); // move camera "backwards" along +z
+
+		// point the camera at the origin
+		// glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+		// glm::vec3 cameraDirection = glm::normalize(cameraPosition - cameraTarget); // pointing -z aka (0.0f, 0.0f, -1.0f)
+
+		// setup the "right axis"
+		// glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+		// glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+
+		// finally setup the "up/+y axis"
+		// glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+		// all these can be used to create a "LookAt matrix" but instead, we'll use a glm function
+		GLfloat radius = 2.0f;
+		GLfloat camX = sin(glfwGetTime()) * radius;
+		GLfloat camZ = cos(glfwGetTime()) * radius;
+		
 		glm::mat4 viewTransform;
-		viewTransform = glm::translate(viewTransform, glm::vec3(0.0f, yValue, -3.0f));
+		viewTransform = glm::lookAt(
+			glm::vec3(camX, 0.0f, camZ), // cam position in world space
+			glm::vec3(0.0f, 0.0f, 0.0f), // target look at position
+			glm::vec3(0.0f, 1.0f, 0.0f)); // up vector of the camera in world space
+
 
 		// setup projection transform
 		glm::mat4 projectionTransform;
@@ -190,8 +211,7 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		// DrawCube(&cubeAId);
-		// DrawRect(&rectAId);
+		// deactivate shader program
 		glUseProgram(0);
 
 		// display results of rendering
