@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "shader.h"
+#include "camera.h"
 
 int InitGLFWwindow();
 int InitGLEW();
@@ -50,6 +51,9 @@ GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
 GLboolean firstMouse = true;
 GLfloat fov = 45.0f;
+
+// setup our camera
+Camera camera();
 
 int main()
 {
