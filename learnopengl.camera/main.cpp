@@ -23,10 +23,31 @@ void DrawRect(GLuint* id);
 
 // function callbacks
 void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode);
+void MouseMovementCB(GLFWwindow* window, double xpos, double ypos);
+void PerformKeyActions();
 
 GLFWwindow* window;
 GLfloat mixValue = 0.0f;
 GLfloat yValue = 0.0f;
+
+// global cam values
+glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// keys with multiple key presses
+bool keys[1024];
+
+// deltaTime framerate constraining
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
+// mouse camera values
+GLfloat lastX = 400;
+GLfloat lastY = 300;
+GLfloat yaw = -90.0f;
+GLfloat pitch = 0.0f;
+GLboolean firstMouse = true;
 
 int main()
 {
@@ -110,8 +131,10 @@ int main()
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	// Give a callback for handling keypresses
 	glfwSetKeyCallback(window, KeyPressCB);
+	glfwSetCursorPosCallback(window, MouseMovementCB);
 
 	// generate triangle VAOs
 	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
@@ -127,8 +150,14 @@ int main()
 	CreateTexture(&awesomefaceTexId, "./awesomeface.png", GL_REPEAT, GL_LINEAR);
 
 	while (!glfwWindowShouldClose(window)) {
+		// calc deltaTime
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		// check for events, such as a keypress
 		glfwPollEvents();
+		PerformKeyActions();
 
 		// Rendering commands here
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -160,32 +189,9 @@ int main()
 			glm::vec3( 1.5f,  0.2f, -1.5f),
 			glm::vec3(-1.3f,  1.0f, -1.5f)
 		};
-
-		// setup camera
-		// glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f); // move camera "backwards" along +z
-
-		// point the camera at the origin
-		// glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-		// glm::vec3 cameraDirection = glm::normalize(cameraPosition - cameraTarget); // pointing -z aka (0.0f, 0.0f, -1.0f)
-
-		// setup the "right axis"
-		// glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-		// glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-
-		// finally setup the "up/+y axis"
-		// glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
-		// all these can be used to create a "LookAt matrix" but instead, we'll use a glm function
-		GLfloat radius = 2.0f;
-		GLfloat camX = sin(glfwGetTime()) * radius;
-		GLfloat camZ = cos(glfwGetTime()) * radius;
 		
 		glm::mat4 viewTransform;
-		viewTransform = glm::lookAt(
-			glm::vec3(camX, 0.0f, camZ), // cam position in world space
-			glm::vec3(0.0f, 0.0f, 0.0f), // target look at position
-			glm::vec3(0.0f, 1.0f, 0.0f)); // up vector of the camera in world space
-
+		viewTransform = glm::lookAt(camPos, camPos + camFront, camUp);
 
 		// setup projection transform
 		glm::mat4 projectionTransform;
@@ -385,42 +391,81 @@ int InitGLFWwindow()
 	glfwMakeContextCurrent(window);
 }
 
+void MouseMovementCB(GLFWwindow* window, double xpos, double ypos) {
+	if (firstMouse) // this bool variable is initially set to true
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	GLfloat sensitivity = 0.05f; 
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f) {
+		pitch = 89.0f;
+	}
+	if (pitch < -89.0f) {
+		pitch = -89.0f;
+	}
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+	front.y = sin(glm::radians(pitch));
+	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+	camFront = glm::normalize(front);
+}
+
 void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-
-	if (action == GLFW_REPEAT) {
-		switch (key)
-		{
-		case GLFW_KEY_UP:
-			mixValue > 1.0f ? mixValue = 1.0f : mixValue += 0.01f;
-			break;
-		case GLFW_KEY_DOWN:
-			mixValue < 0.0f ? mixValue = 0.0f : mixValue -= 0.01f;
-			break;
-		case GLFW_KEY_W:
-			yValue -= 0.05f;
-			break;
-		case GLFW_KEY_S:
-			yValue += 0.05f;
-			break;
-		default:
-			break;
-		}
+	if (action == GLFW_PRESS) {
+		keys[key] = true;
 	}
-	else if (action == GLFW_PRESS) {
-		switch (key)
-		{
-		case GLFW_KEY_ESCAPE:
-			glfwSetWindowShouldClose(window, GL_TRUE);
-			break;
-		case GLFW_KEY_UP:
-			mixValue > 1.0f ? mixValue = 1.0f : mixValue += 0.01f;
-			break;
-		case GLFW_KEY_DOWN:
-			mixValue < 0.0f ? mixValue = 0.0f : mixValue -= 0.01f;
-			break;
-		default:
-			break;
-		}
+	else if (action == GLFW_RELEASE) {
+		keys[key] = false;
+	}
+}
+
+void PerformKeyActions() {
+
+	// change textures
+	if (keys[GLFW_KEY_UP]) {
+		mixValue > 1.0f ? mixValue = 1.0f : mixValue += 0.01f;
+	}
+
+	if (keys[GLFW_KEY_DOWN]) {
+		mixValue < 0.0f ? mixValue = 0.0f : mixValue -= 0.01f;
+	}
+
+	// exit
+	if (keys[GLFW_KEY_ESCAPE]) {
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+
+	// movement keys
+	GLfloat camSpeed = 5.0f * deltaTime;
+	if (keys[GLFW_KEY_W]) {
+		camPos += camSpeed * camFront;
+	}
+
+	if (keys[GLFW_KEY_S]) {
+		camPos -= camSpeed * camFront;
+	}
+
+	if (keys[GLFW_KEY_A]) {
+		camPos -= glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+	}
+
+	if (keys[GLFW_KEY_D]) {
+		camPos += glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
 	}
 }
