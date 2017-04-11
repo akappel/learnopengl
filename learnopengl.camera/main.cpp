@@ -24,6 +24,7 @@ void DrawRect(GLuint* id);
 // function callbacks
 void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode);
 void MouseMovementCB(GLFWwindow* window, double xpos, double ypos);
+void ScrollCB(GLFWwindow* window, double xoffset, double yoffset);
 void PerformKeyActions();
 
 GLFWwindow* window;
@@ -48,6 +49,7 @@ GLfloat lastY = 300;
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
 GLboolean firstMouse = true;
+GLfloat fov = 45.0f;
 
 int main()
 {
@@ -135,6 +137,7 @@ int main()
 	// Give a callback for handling keypresses
 	glfwSetKeyCallback(window, KeyPressCB);
 	glfwSetCursorPosCallback(window, MouseMovementCB);
+	glfwSetScrollCallback(window, ScrollCB);
 
 	// generate triangle VAOs
 	CreateTriangle(&trigAId, trigAVertices, sizeof(trigAVertices));
@@ -195,7 +198,7 @@ int main()
 
 		// setup projection transform
 		glm::mat4 projectionTransform;
-		projectionTransform = glm::perspective(glm::radians(45.0f), (GLfloat)width/height, 0.1f, 100.0f);
+		projectionTransform = glm::perspective(glm::radians(fov), (GLfloat)width/height, 0.1f, 100.0f);
 
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(viewTransform));
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "projection"), 1, GL_FALSE, glm::value_ptr(projectionTransform));
@@ -389,6 +392,18 @@ int InitGLFWwindow()
 
 
 	glfwMakeContextCurrent(window);
+}
+
+void ScrollCB(GLFWwindow* window, double xoffset, double yoffset) {
+	if (fov >= 1.0f && fov <= 45.0f) {
+		fov -= yoffset * 1.5f;
+	}
+	if (fov <= 1.0f) {
+		fov = 1.0f;
+	}
+	if (fov >= 45.0f) {
+		fov = 45.0f;
+	}
 }
 
 void MouseMovementCB(GLFWwindow* window, double xpos, double ypos) {
