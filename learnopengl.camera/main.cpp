@@ -34,8 +34,11 @@ GLfloat yValue = 0.0f;
 
 // global cam values
 glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+// setup our camera
+Camera camera(camPos, camUp);
+GLfloat lastX = 400;
+GLfloat lastY = 300;
 
 // keys with multiple key presses
 bool keys[1024];
@@ -44,16 +47,7 @@ bool keys[1024];
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
-// mouse camera values
-GLfloat lastX = 400;
-GLfloat lastY = 300;
-GLfloat yaw = -90.0f;
-GLfloat pitch = 0.0f;
 GLboolean firstMouse = true;
-GLfloat fov = 45.0f;
-
-// setup our camera
-Camera camera();
 
 int main()
 {
@@ -196,15 +190,12 @@ int main()
 			glm::vec3( 1.5f,  0.2f, -1.5f),
 			glm::vec3(-1.3f,  1.0f, -1.5f)
 		};
-		
-		glm::mat4 viewTransform;
-		viewTransform = glm::lookAt(camPos, camPos + camFront, camUp);
 
 		// setup projection transform
 		glm::mat4 projectionTransform;
-		projectionTransform = glm::perspective(glm::radians(fov), (GLfloat)width/height, 0.1f, 100.0f);
+		projectionTransform = glm::perspective(glm::radians(camera.Zoom), (GLfloat)width/height, 0.1f, 100.0f);
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(viewTransform));
+		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "view"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
 		glUniformMatrix4fv(glGetUniformLocation(shader.GetProgramId(), "projection"), 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
 		// custom draw iteration for each position
@@ -399,15 +390,7 @@ int InitGLFWwindow()
 }
 
 void ScrollCB(GLFWwindow* window, double xoffset, double yoffset) {
-	if (fov >= 1.0f && fov <= 45.0f) {
-		fov -= yoffset * 1.5f;
-	}
-	if (fov <= 1.0f) {
-		fov = 1.0f;
-	}
-	if (fov >= 45.0f) {
-		fov = 45.0f;
-	}
+	camera.ProcessMouseScroll(yoffset);
 }
 
 void MouseMovementCB(GLFWwindow* window, double xpos, double ypos) {
@@ -423,25 +406,7 @@ void MouseMovementCB(GLFWwindow* window, double xpos, double ypos) {
 	lastX = xpos;
 	lastY = ypos;
 
-	GLfloat sensitivity = 0.05f; 
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f) {
-		pitch = 89.0f;
-	}
-	if (pitch < -89.0f) {
-		pitch = -89.0f;
-	}
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-	front.y = sin(glm::radians(pitch));
-	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-	camFront = glm::normalize(front);
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -471,20 +436,24 @@ void PerformKeyActions() {
 	}
 
 	// movement keys
-	GLfloat camSpeed = 5.0f * deltaTime;
+	// GLfloat camSpeed = 5.0f * deltaTime;
 	if (keys[GLFW_KEY_W]) {
-		camPos += camSpeed * camFront;
+		// camPos += camSpeed * camFront;
+		camera.ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
 	}
 
 	if (keys[GLFW_KEY_S]) {
-		camPos -= camSpeed * camFront;
+		// camPos -= camSpeed * camFront;
+		camera.ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
 	}
 
 	if (keys[GLFW_KEY_A]) {
-		camPos -= glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+		// camPos -= glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+		camera.ProcessKeyboard(CameraMovement::LEFT, deltaTime);
 	}
 
 	if (keys[GLFW_KEY_D]) {
-		camPos += glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+		// camPos += glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+		camera.ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
 	}
 }
