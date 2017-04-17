@@ -71,14 +71,25 @@ public:
 	void ProcessKeyboard(CameraMovement direction, GLfloat deltaTime)
 	{
 		GLfloat velocity = this->MovementSpeed * deltaTime;
-		if (direction == FORWARD)
-			this->Position += this->Front * velocity;
-		if (direction == BACKWARD)
-			this->Position -= this->Front * velocity;
-		if (direction == LEFT)
-			this->Position -= this->Right * velocity;
-		if (direction == RIGHT)
-			this->Position += this->Right * velocity;
+		if (direction == FORWARD) {
+			this->Position.x += this->Front.x * velocity;
+			this->Position.z += this->Front.z * velocity;
+		}
+
+		if (direction == BACKWARD) {
+			this->Position.x -= this->Front.x * velocity;
+			this->Position.z -= this->Front.z * velocity;
+		}
+			
+		if (direction == LEFT) {
+			this->Position.x -= this->Right.x * velocity;
+			this->Position.z -= this->Right.z * velocity;
+		}
+			
+		if (direction == RIGHT) {
+			this->Position.x += this->Right.x * velocity;
+			this->Position.z += this->Right.z * velocity;
+		}
 	}
 
 	void ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch = true)
