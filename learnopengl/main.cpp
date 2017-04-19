@@ -417,6 +417,10 @@ void KeyPressCB(GLFWwindow* window, int key, int scancode, int action, int mode)
 	else if (action == GLFW_RELEASE) {
 		keys[key] = false;
 	}
+
+	if (action == GLFW_PRESS && key == GLFW_KEY_Q) {
+		camera.GetCameraMode() == CameraMode::FPSMODE ? camera.SetCameraMode(CameraMode::FLYMODE) : camera.SetCameraMode(CameraMode::FPSMODE);
+	}
 }
 
 void PerformKeyActions() {
@@ -436,24 +440,19 @@ void PerformKeyActions() {
 	}
 
 	// movement keys
-	// GLfloat camSpeed = 5.0f * deltaTime;
 	if (keys[GLFW_KEY_W]) {
-		// camPos += camSpeed * camFront;
-		camera.ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
+		camera.ProcessMovement(CameraMovement::FORWARD, deltaTime);
 	}
 
 	if (keys[GLFW_KEY_S]) {
-		// camPos -= camSpeed * camFront;
-		camera.ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
+		camera.ProcessMovement(CameraMovement::BACKWARD, deltaTime);
 	}
 
 	if (keys[GLFW_KEY_A]) {
-		// camPos -= glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
-		camera.ProcessKeyboard(CameraMovement::LEFT, deltaTime);
+		camera.ProcessMovement(CameraMovement::LEFT, deltaTime);
 	}
 
 	if (keys[GLFW_KEY_D]) {
-		// camPos += glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
-		camera.ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
+		camera.ProcessMovement(CameraMovement::RIGHT, deltaTime);
 	}
 }

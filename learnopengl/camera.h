@@ -13,6 +13,11 @@ enum CameraMovement {
 	RIGHT
 };
 
+enum CameraMode {
+	FPSMODE,
+	FLYMODE
+};
+
 const GLfloat YAW			= -90.0f;
 const GLfloat PITCH			= 0.0f;
 const GLfloat SPEED			= 3.0f;
@@ -36,8 +41,10 @@ public:
 	GLfloat MouseSensitivity;
 	GLfloat Zoom;
 
+	CameraMode mode;
+
 	// ctor with vectors
-	Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw = YAW, GLfloat pitch = PITCH)
+	Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw = YAW, GLfloat pitch = PITCH, CameraMode mode = FPSMODE)
 		: Front(glm::vec3(0.0f, 0.0f, -1.0f)),
 		MovementSpeed(SPEED),
 		MouseSensitivity(SENSITIVITY),
@@ -47,10 +54,11 @@ public:
 		this->WorldUp = up;
 		this->Yaw = yaw;
 		this->Pitch = pitch;
+		this->mode = mode;
 		this->updateCameraVectors();
 	}
 
-	Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch) 
+	Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch, CameraMode mode = FPSMODE)
 		: Front(glm::vec3(0.0f, 0.0f, -1.0f)),
 		MovementSpeed(SPEED), 
 		MouseSensitivity(SENSITIVITY), 
@@ -60,6 +68,7 @@ public:
 		this->WorldUp = glm::vec3(upX, upY, upZ);
 		this->Yaw = yaw;
 		this->Pitch = pitch;
+		this->mode = mode;
 		this->updateCameraVectors();
 	}
 
@@ -68,27 +77,58 @@ public:
 		return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
 	}
 
-	void ProcessKeyboard(CameraMovement direction, GLfloat deltaTime)
+	CameraMode GetCameraMode()
+	{
+		return this->mode;
+	}
+
+	void SetCameraMode(CameraMode m)
+	{
+		this->mode = m;
+	}
+
+	void ProcessMovement(CameraMovement direction, GLfloat deltaTime)
 	{
 		GLfloat velocity = this->MovementSpeed * deltaTime;
+
 		if (direction == FORWARD) {
-			this->Position.x += this->Front.x * velocity;
-			this->Position.z += this->Front.z * velocity;
+			if (mode == FPSMODE) {
+				this->Position.x += this->Front.x * velocity;
+				this->Position.z += this->Front.z * velocity;
+			}
+			else {
+				this->Position += this->Front * velocity;
+			}
 		}
 
 		if (direction == BACKWARD) {
-			this->Position.x -= this->Front.x * velocity;
-			this->Position.z -= this->Front.z * velocity;
+			if (mode == FPSMODE) {
+				this->Position.x -= this->Front.x * velocity;
+				this->Position.z -= this->Front.z * velocity;
+			}
+			else {
+				this->Position -= this->Front * velocity;
+			}
 		}
 			
 		if (direction == LEFT) {
-			this->Position.x -= this->Right.x * velocity;
-			this->Position.z -= this->Right.z * velocity;
+			if (mode == FPSMODE) {
+				this->Position.x -= this->Right.x * velocity;
+				this->Position.z -= this->Right.z * velocity;
+			}
+			else {
+				this->Position -= this->Right * velocity;
+			}
 		}
 			
 		if (direction == RIGHT) {
-			this->Position.x += this->Right.x * velocity;
-			this->Position.z += this->Right.z * velocity;
+			if (mode == FPSMODE) {
+				this->Position.x += this->Right.x * velocity;
+				this->Position.z += this->Right.z * velocity;
+			}
+			else {
+				this->Position += this->Right * velocity;
+			}
 		}
 	}
 
